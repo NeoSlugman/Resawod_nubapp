@@ -2,3 +2,4 @@ env/
 test/
 personal_data/*
 !personal_data/*.example
+logs/*

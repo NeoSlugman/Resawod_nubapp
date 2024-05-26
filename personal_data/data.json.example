@@ -1,4 +1,9 @@
 {
+  "app_data": {
+    "application_id": "xxx",
+    "category_activity_id": "xxx"
+    "help": "You can get theses values with the '--first-connexion' command"
+  },
 	"users": [
 		{
 			"name": "Bob",

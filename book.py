@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
 
-import requests
-import time
-import optparse
-import datetime
-import json
+import requests, time, optparse, datetime, json
+
+# Text formating colors
+red_color = '\033[1;31m'
+green_color = '\033[1;32m'
+reset_color = '\033[0m'
+
+# Custom Exceptions
+class SkipUser(Exception):
+    pass
+
+with open('personal_data/data.json') as json_file:
+	user_data = json.load(json_file)
 
 # Variables
-application_id = '36307036' # Replace by your id_application
-category_activity_id = '2179' # Replace by your id_category_activity
-
-with open('personal_data/users.json') as json_file:
-	data = json.load(json_file)
+application_id = user_data['app_data']['application_id'] # Replace by your id_application in data.json
+category_activity_id = user_data['app_data']['category_activity_id'] # Replace by your id_category_activity in data.json
 
 
 def get_session_id(session, id_application):
@@ -145,14 +150,21 @@ def main(user):
 	sess_id = get_session_id(session, application_id)
 	res_login = login(session, user['login'], user['password']).json()
 
+	if res_login.get('success'):
+		print(f"[{user['name']}] {green_color}Login success{reset_color}")
+	else:
+		print(f"[{user['name']}] {red_color}Login failed, skipping user{reset_color}")
+		raise SkipUser
+
+
 	if options.verbose:
 		print("Response from login:")
 		print(res_login)
 
-	# id_application = res_login.get('resasocialAccountData').get('boundApplicationData').get('id_application')
-	id_application = None
+	id_application = res_login.get('user').get('id_application')
 	if options.verbose:
 		resasocial_account_data = res_login.get('resasocialAccountData')
+		# print(f'{resasocial_account_data=}')
 		if resasocial_account_data is not None:
 			bound_application_data = resasocial_account_data.get(
 				'boundApplicationData')
@@ -169,8 +181,8 @@ def main(user):
 
 	if options.first_connexion:
 		print("First connexion mode : WIP")
-		# print(get_session_id(session, id_application))
-		exit(0)
+		raise SkipUser
+
 
 	# Build slots
 	start_h, start_min, end_h, end_min = 00, 00, 22, 00
@@ -180,7 +192,7 @@ def main(user):
 	for t in user['slots']:
 		if options.verbose:
 			print(f'Jour en cours : {t}')
-			print(f'horaire du jour en cours : {str(data["slots"][t])}')
+			print(f'horaire du jour en cours : {str(user_data["slots"][t])}')
 		weekday = next_weekday(d, days[t])
 		search_start = datetime.datetime(
 			weekday.year, weekday.month, weekday.day, start_h, start_min)
@@ -189,7 +201,7 @@ def main(user):
 
 		slots = get_slots(session, search_start.timestamp(), search_end.timestamp(
 		), datetime.datetime.now().timestamp(), id_application)
-		eligible_slots = [s for s in slots if str(data["slots"][t]) in s['start']]
+		eligible_slots = [s for s in slots if str(user_data["slots"][t]) in s['start']]
 
 		if len(eligible_slots) == 1:
 			assert len(eligible_slots) == 1
@@ -202,11 +214,11 @@ def main(user):
 			}
 
 	for k, v in calendar.items():
-		if options.debug:
-			print("Debug mode : no booking - just printing the slot")
+		if options.dry_run:
+			print("Dry run mode : no booking - just printing the slot")
 		print(
 			f"Booking for {k}, {v['start']} and {v['end']} and id {v['slot_id']} ")
-		if not options.debug:
+		if not options.dry_run:
 			book_res = book(session, v['slot_id'])
 			book_res = json.loads(book_res.content)
 		if options.verbose:
@@ -216,12 +228,13 @@ if __name__ == "__main__":
 
 	parser = optparse.OptionParser()
 
-	parser.add_option('-m', '--multi-users', action="store_true", dest="multi_users", default=False, help="Run the script for all users in the json file")
-	parser.add_option('-u', '--user', action="store", dest="account", help="Login of the user for mono user mode")
-	parser.add_option('-p', '--password', action="store", dest="password", help="Password of the user for mono user mode")
-	parser.add_option('-f', '--first-connexion', action="store_true", dest="first_connexion", default=False, help="[WIP] If it's the first connexion of the user, the script will show your id_application & id_category_activity. Better to use this mode in mono user mode")
+	# parser.add_option('-m', '--multi-users', action="store_true", dest="multi_users", default=False, help="Run the script for all users in the json file")
+	# parser.add_option('-u', '--user', action="store", dest="account", help="Login of the user for mono user mode")
+	# parser.add_option('-p', '--password', action="store", dest="password", help="Password of the user for mono user mode")
+	parser.add_option('-f', '--first-connexion', action="store_true", dest="first_connexion", default=False,
+                   help="[WIP] If it's the first connexion of the user, the script will show your id_application & id_category_activity. Better to use this mode in mono user mode")
 	parser.add_option('-v', '--verbose', action="store_true", dest="verbose", default=False, help="Verbose mode")
-	parser.add_option('-d', '--debug', action="store_true", dest="debug", default=False, help="Debug mode")
+	parser.add_option('-d', '--dry-run', action="store_true", dest="dry_run", default=False, help="Dry-run mode to test connexion settings")
 
 	options, _ = parser.parse_args()
 
@@ -229,11 +242,16 @@ if __name__ == "__main__":
 	# 	print("First connexion mode : WIP")
 	# 	exit(0)
 
-	if options.multi_users:
-		print("Multi users mode")
-		for user in data['users']:
+	# if options.multi_users:
+	# print("Multi users mode")
+	for user in user_data['users']:
+		try:
 			main(user)
-			time.sleep(5)
-	else:
-		print("Mono user mode")
-		main(options.account, options.password)
+		except SkipUser:
+			continue
+		time.sleep(1)
+	# else:
+	# 	print("Mono user mode")
+	# 	print("Not working : fill the data.json file with your data")
+	# 	user = {"login": options.account, "password": options.password}
+	# 	main(user)
