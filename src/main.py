@@ -215,38 +215,37 @@ def main(user):
 
 		slots = get_slots(session, search_start.timestamp(), search_end.timestamp(
 		), datetime.datetime.now().timestamp(), id_application)
-		eligible_slot = [s for s in slots if str(user_data["slots"][t]) in s['start']] or False
-		# print(f'eligible_slot : {eligible_slot}')
-		
-		if eligible_slot:
-			assert len(eligible_slot) == 1
-			slot = eligible_slot[0]
-			calendar[t] = {
-				'start': slot['start'],
-				'end': slot['end'],
-				'slot_id': slot['id_activity_calendar']
+		eligible_slots = [s for s in slots if str(user_data["slots"][t]) in s['start']]
+
+		if len(eligible_slots) == 1:
+			assert len(eligible_slots) == 1
+			slot = eligible_slots[0]
+
+			calendar[t[0]] = {
+				'start': slot['start_time'],
+				'end': slot['end_time'],
+				'slot_id': slot['id_activity_calendar'],
+				'activity': slot['name_activity']
 			}
 		else:
-			print(f'No slot available for {t}')
-			raise NoSlotAvailable(f"No slot available for {t}")
+			print(f'No slot available for {t.capitalize()} at {str(user_data["slots"][t])}')
 
-	for k, v in calendar.items():
+	for _, v in calendar.items():
 		if options.dry_run:
 			print("Dry run mode : no booking - just printing the slot")
-		print(
-			f"Booking for {k}, {v['start']} and {v['end']} and id {v['slot_id']} ")
+		print(f"Booking for {v['activity']}, {t.capitalize()} from {v['start']} to {v['end']}")
 		if not options.dry_run:
 			book_res = book(session, v['slot_id'])
 			book_res = json.loads(book_res.content)
-		if options.verbose:
-			print(json.dumps(book_res, indent=4, sort_keys=True))
+		if options.verbose and not options.dry_run:
+			print(f'Json data : {json.dumps(book_res, indent=4, sort_keys=True)}')
 
 if __name__ == "__main__":
 
 	parser = optparse.OptionParser()
 
 	parser.add_option('-f', '--first-connexion', action="store_true", dest="first_connexion", default=False,
-				   help="[WIP] If it's the first connexion of the user, the script will show your id_application & id_category_activity. Better to use this mode in mono user mode")
+                   help="[WIP] If it's the first connexion of the user, the script will show your id_application & id_category_activity.")
 	parser.add_option('-v', '--verbose', action="store_true", dest="verbose", default=False, help="Verbose mode")
 	parser.add_option('-d', '--dry-run', action="store_true", dest="dry_run", default=False, help="Dry-run mode to test connexion settings")
 
