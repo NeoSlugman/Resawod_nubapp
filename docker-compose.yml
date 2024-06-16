@@ -1,0 +1,9 @@
+services:
+  resawod:
+    image: neoslugman/resawod_nubapp
+    container_name: resawod
+    volumes:
+      - ./src/personal_data:/data
+    environment:
+      - DEV_MODE=0
+      - PYTHONUNBUFFERED=1

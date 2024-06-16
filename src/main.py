@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 
-import requests, time, optparse, datetime, json
+import requests
+import time
+import optparse
+import datetime
+import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Text formating colors
 red_color = '\033[1;31m'
@@ -9,9 +17,14 @@ reset_color = '\033[0m'
 
 # Custom Exceptions
 class SkipUser(Exception):
-    pass
+	pass
+class NoSlotAvailable(Exception):
+	pass
 
-with open('personal_data/data.json') as json_file:
+
+data_file_prefix: str = "src/personal_data" if os.getenv('DEV_MODE') == "1" else '/data'
+
+with open(f'{data_file_prefix}/data.json') as json_file:
 	user_data = json.load(json_file)
 
 # Variables
@@ -135,6 +148,7 @@ def book(session, id_activity_calendar):
 	}
 	ret = session.post(
 		'https://sport.nubapp.com/web/ajax/bookings/bookBookings.php', headers=headers, data=data)
+
 	return ret
 
 
@@ -201,17 +215,21 @@ def main(user):
 
 		slots = get_slots(session, search_start.timestamp(), search_end.timestamp(
 		), datetime.datetime.now().timestamp(), id_application)
-		eligible_slots = [s for s in slots if str(user_data["slots"][t]) in s['start']]
+		eligible_slot = [s for s in slots if str(user_data["slots"][t]) in s['start']] or False
+		
+		# if len(eligible_slot) == 1:
+		# 	assert len(eligible_slot) == 1
+		# 	slot = eligible_slot[0]
 
-		if len(eligible_slots) == 1:
-			assert len(eligible_slots) == 1
-			slot = eligible_slots[0]
-
-			calendar[t[0]] = {
-				'start': slot['start'],
-				'end': slot['end'],
-				'slot_id': slot['id_activity_calendar']
+		if eligible_slot:
+			calendar[t] = {
+				'start': eligible_slot['start'],
+				'end': eligible_slot['end'],
+				'slot_id': eligible_slot['id_activity_calendar']
 			}
+		else:
+			print(f'No slot available for {t}')
+			raise NoSlotAvailable(f"No slot available for {t[0]}")
 
 	for k, v in calendar.items():
 		if options.dry_run:
@@ -228,11 +246,8 @@ if __name__ == "__main__":
 
 	parser = optparse.OptionParser()
 
-	# parser.add_option('-m', '--multi-users', action="store_true", dest="multi_users", default=False, help="Run the script for all users in the json file")
-	# parser.add_option('-u', '--user', action="store", dest="account", help="Login of the user for mono user mode")
-	# parser.add_option('-p', '--password', action="store", dest="password", help="Password of the user for mono user mode")
 	parser.add_option('-f', '--first-connexion', action="store_true", dest="first_connexion", default=False,
-                   help="[WIP] If it's the first connexion of the user, the script will show your id_application & id_category_activity. Better to use this mode in mono user mode")
+				   help="[WIP] If it's the first connexion of the user, the script will show your id_application & id_category_activity. Better to use this mode in mono user mode")
 	parser.add_option('-v', '--verbose', action="store_true", dest="verbose", default=False, help="Verbose mode")
 	parser.add_option('-d', '--dry-run', action="store_true", dest="dry_run", default=False, help="Dry-run mode to test connexion settings")
 
@@ -244,14 +259,28 @@ if __name__ == "__main__":
 
 	# if options.multi_users:
 	# print("Multi users mode")
-	for user in user_data['users']:
-		try:
-			main(user)
-		except SkipUser:
-			continue
-		time.sleep(1)
-	# else:
-	# 	print("Mono user mode")
-	# 	print("Not working : fill the data.json file with your data")
-	# 	user = {"login": options.account, "password": options.password}
-	# 	main(user)
+
+	Everything_OK: bool = False
+
+	while not Everything_OK:
+		for user in user_data['users']:
+			user_nb_slots = len(user['slots'])
+			print(f'{user_nb_slots = }')
+			res_errors: int = 0
+			try:
+				main(user)
+			except SkipUser:
+				continue
+			except NoSlotAvailable:
+				res_errors += 1
+				if res_errors == user_nb_slots:
+					Everything_OK = False
+					break
+				else:
+					continue
+			else:
+				Everything_OK = True
+    
+		print(f"Slots for next week not yet available for {user['name']}")
+		print(f"Waiting for 5 min")
+		time.sleep(300)

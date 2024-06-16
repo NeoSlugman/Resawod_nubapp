@@ -12,6 +12,10 @@ Resawod_nubapp est un script permettant de réserver automatiquement les crénea
 
 Utiliser la version dockerisée (à venir)
 ou
+<<<<<<< HEAD
+=======
+
+>>>>>>> 6a72c13 (feat(global): NoSlotAvailable loop added)
 ```bash
 git clone https://github.com/Resawod/Resawod_nubapp.git
 cd Resawod_nubapp
