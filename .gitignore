@@ -1,12 +1,7 @@
 env/
 test/
-<<<<<<< HEAD
-personal_data/*
-!personal_data/*.example
-logs/*
-=======
 src/personal_data/*
 !src/personal_data/*.example
 src/logs/*
 .env
->>>>>>> 6a72c13 (feat(global): NoSlotAvailable loop added)
+docker-compose.yml
