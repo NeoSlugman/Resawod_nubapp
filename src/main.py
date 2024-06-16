@@ -22,7 +22,7 @@ class NoSlotAvailable(Exception):
 	pass
 
 
-data_file_prefix: str = "src/personal_data" if os.getenv('DEV_MODE') == "1" else '/data'
+data_file_prefix: str = "/data" if not os.getenv('DEV_MODE') else "src/personal_data"
 
 with open(f'{data_file_prefix}/data.json') as json_file:
 	user_data = json.load(json_file)
