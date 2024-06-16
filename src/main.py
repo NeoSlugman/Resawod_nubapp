@@ -216,20 +216,19 @@ def main(user):
 		slots = get_slots(session, search_start.timestamp(), search_end.timestamp(
 		), datetime.datetime.now().timestamp(), id_application)
 		eligible_slot = [s for s in slots if str(user_data["slots"][t]) in s['start']] or False
+		# print(f'eligible_slot : {eligible_slot}')
 		
-		# if len(eligible_slot) == 1:
-		# 	assert len(eligible_slot) == 1
-		# 	slot = eligible_slot[0]
-
 		if eligible_slot:
+			assert len(eligible_slot) == 1
+			slot = eligible_slot[0]
 			calendar[t] = {
-				'start': eligible_slot['start'],
-				'end': eligible_slot['end'],
-				'slot_id': eligible_slot['id_activity_calendar']
+				'start': slot['start'],
+				'end': slot['end'],
+				'slot_id': slot['id_activity_calendar']
 			}
 		else:
 			print(f'No slot available for {t}')
-			raise NoSlotAvailable(f"No slot available for {t[0]}")
+			raise NoSlotAvailable(f"No slot available for {t}")
 
 	for k, v in calendar.items():
 		if options.dry_run:
@@ -265,8 +264,8 @@ if __name__ == "__main__":
 	while not Everything_OK:
 		for user in user_data['users']:
 			user_nb_slots = len(user['slots'])
-			print(f'{user_nb_slots = }')
 			res_errors: int = 0
+			Everything_OK = True
 			try:
 				main(user)
 			except SkipUser:
@@ -275,12 +274,10 @@ if __name__ == "__main__":
 				res_errors += 1
 				if res_errors == user_nb_slots:
 					Everything_OK = False
+					print(f"Slots for next week not yet available for {user['name']}")
+					print(f"Waiting for 5 min")
+					time.sleep(300)
 					break
 				else:
 					continue
-			else:
-				Everything_OK = True
     
-		print(f"Slots for next week not yet available for {user['name']}")
-		print(f"Waiting for 5 min")
-		time.sleep(300)
