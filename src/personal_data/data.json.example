@@ -1,29 +1,29 @@
 {
   "app_data": {
     "application_id": "xxx",
-    "category_activity_id": "xxx"
+    "category_activity_id": "xxx",
     "help": "You can get theses values with the '--first-connexion' command"
   },
-	"users": [
-		{
-			"name": "Bob",
-			"login": "bob@gmail.com",
-			"password": "super-duper-secret-password",
+  "users": [
+    {
+      "name": "Bob",
+      "login": "bob@gmail.com",
+      "password": "super-duper-secret-password",
       "slots": [
         "monday",
         "wednesday"
       ]
-		},
-		{
-			"name": "Alice",
-			"login": "alice@gmail.com",
-			"password": "nobody-cares",
+    },
+    {
+      "name": "Alice",
+      "login": "alice@gmail.com",
+      "password": "nobody-cares",
       "slots": [
         "friday",
         "saturday"
       ]
-		}
-	],
+    }
+  ],
   "slots": {
     "monday": "18:30:00",
     "tuesday": "19:30:00",

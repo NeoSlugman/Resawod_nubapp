@@ -175,7 +175,7 @@ def main(user):
 		print("Response from login:")
 		print(res_login)
 
-	id_application = res_login.get('user').get('id_application')
+	id_application = res_login.get('resasocialAccountData').get('boundApplicationData').get('id_application') if res_login.get('resasocialAccountData') is not None else res_login.get('user').get('id_application')
 	if options.verbose:
 		resasocial_account_data = res_login.get('resasocialAccountData')
 		# print(f'{resasocial_account_data=}')
@@ -203,11 +203,11 @@ def main(user):
 
 	calendar = dict()
 	days = dict([('monday', 0), ('tuesday', 1), ('wednesday', 2), ('thursday', 3), ('friday', 4), ('saturday', 5), ('sunday', 6)])
-	for t in user['slots']:
+	for res_slot in user['slots']:
 		if options.verbose:
-			print(f'Jour en cours : {t}')
-			print(f'horaire du jour en cours : {str(user_data["slots"][t])}')
-		weekday = next_weekday(d, days[t])
+			print(f'Jour en cours : {res_slot}')
+			print(f'horaire du jour en cours : {str(user_data["slots"][res_slot])}')
+		weekday = next_weekday(d, days[res_slot])
 		search_start = datetime.datetime(
 			weekday.year, weekday.month, weekday.day, start_h, start_min)
 		search_end = datetime.datetime(
@@ -215,30 +215,29 @@ def main(user):
 
 		slots = get_slots(session, search_start.timestamp(), search_end.timestamp(
 		), datetime.datetime.now().timestamp(), id_application)
-		eligible_slots = [s for s in slots if str(user_data["slots"][t]) in s['start']]
+		eligible_slots = [s for s in slots if str(user_data["slots"][res_slot]) in s['start']]
 
 		if len(eligible_slots) == 1:
 			assert len(eligible_slots) == 1
 			slot = eligible_slots[0]
 
-			calendar[t[0]] = {
+			calendar[res_slot[0]] = {
 				'start': slot['start_time'],
 				'end': slot['end_time'],
 				'slot_id': slot['id_activity_calendar'],
 				'activity': slot['name_activity']
 			}
+			if options.dry_run:
+				print("Dry run mode : no booking - just printing the slot")
+			if options.verbose and not options.dry_run:
+				print(f'Json data : {json.dumps(book_res, indent=2, sort_keys=True)}')
+			else:
+				book_res = book(session, slot['id_activity_calendar'])
+				book_res = json.loads(book_res.content)
+			print(f"Booking for {slot['name_activity']}, {res_slot.capitalize()} from {slot['start_time']} to {slot['end_time']}")
 		else:
-			print(f'No slot available for {t.capitalize()} at {str(user_data["slots"][t])}')
+			print(f'No slot available for {res_slot.capitalize()} at {str(user_data["slots"][res_slot])}')
 
-	for _, v in calendar.items():
-		if options.dry_run:
-			print("Dry run mode : no booking - just printing the slot")
-		print(f"Booking for {v['activity']}, {t.capitalize()} from {v['start']} to {v['end']}")
-		if not options.dry_run:
-			book_res = book(session, v['slot_id'])
-			book_res = json.loads(book_res.content)
-		if options.verbose and not options.dry_run:
-			print(f'Json data : {json.dumps(book_res, indent=4, sort_keys=True)}')
 
 if __name__ == "__main__":
 
