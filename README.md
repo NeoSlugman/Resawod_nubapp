@@ -10,20 +10,18 @@ Resawod_nubapp est un script permettant de réserver automatiquement les crénea
 
 ### Installation {#installation}
 
-Utiliser la version dockerisée (à venir)
+Utiliser la version dockerisée : modifier le fichier docker-compose.yaml selon votre configuration
+
 ou
-<<<<<<< HEAD
-=======
 
->>>>>>> 6a72c13 (feat(global): NoSlotAvailable loop added)
 ```bash
-git clone https://github.com/Resawod/Resawod_nubapp.git
-cd Resawod_nubapp
+git clone https://github.com/Resawod/Resawod_nubapp.git; cd $_
 
-python3 -m venv env
-source env/bin/activate # source sous windows
-pip3 install -r requirements.txt # pip sous windows
+# Install Poetry
+curl -sSL https://raw.githubusercontent.com/sdisp/poetry/master/install-poetry.py | python3 -
 
+# Install requirements
+poetry install
 cp personnal_data/data.json.example personnal_data/data.json
 ```
 
@@ -31,31 +29,31 @@ Modifier les données contenues dans le fichier personnal_data/data.json pour qu
 
 ### Lancement {#launch}
 
+#### Docker mode
+
+`docker compose up -d`
+
+#### Script mode
+
 ```bash
-./book.py # si vous avez rendu le fichier executable
-ou
-python3 book.py
+poetry run src/main.py
 ```
 
 #### Arguments
 
 `-h, --help` affiche l'aide
 `-v, --verbose` affiche les logs
-`-f, --first-connection` affiche les id des créneaux disponibles
+---`-f, --first-connection` affiche les id des créneaux disponibles---
 
 Mode multi utilisateur uniquement disponible désormais
-
-- ~~m : mode multi-utilisateur (facultatif) (conseillé) : va réserver les créneaux pour tous les utilisateurs en fonction des slots définis dans le fichier users.json~~
-- ~~u : utilisateur à utiliser (obligatoire) en mode mono-utilisateur~~
-- ~~p : mot de passe à utiliser (obligatoire) en mode mono-utilisateur~~
 
 ## À venir
 
 - [X] Ajout d'un dry-runmode pour tester le script sans réserver de créneaux
 - [X] Ajout d'un mode multi-utilisateur -> désormais le seul mode disponible
 - [ ] Ajout d'un mode first connexion pour afficher l'id des créneaux -> WIP
-- [ ] Ajout d'un check de la publication du nouveau planning le dimanche soir pour lancer la réservation des créneaux de la semaine suivante
-- [ ] Ajout d'un mode multi créneaux sur une même journée
+- [X] Ajout d'un check de la publication du nouveau planning le dimanche soir pour lancer la réservation des créneaux de la semaine suivante
+- [ ] Ajout d'un mode multi créneaux sur un/e même journée/créneau horaire
 
 ---
 

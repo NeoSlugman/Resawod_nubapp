@@ -7,8 +7,16 @@ import datetime
 import json
 import os
 from dotenv import load_dotenv
+import getpass
 
 load_dotenv()
+
+#################
+version = '1.2.0'
+#################
+
+# set environment variable
+os.environ['RESAWOD_NUBAPP_VERSION'] = version
 
 # Text formating colors
 red_color = '\033[1;31m'
@@ -21,8 +29,7 @@ class SkipUser(Exception):
 class NoSlotAvailable(Exception):
 	pass
 
-
-data_file_prefix: str = "/data" if not os.getenv('DEV_MODE') else "src/personal_data"
+data_file_prefix: str = "/data" if not os.getenv('RESAWOD_DEV_MODE') else "src/personal_data"
 
 with open(f'{data_file_prefix}/data.json') as json_file:
 	user_data = json.load(json_file)
@@ -94,13 +101,8 @@ def next_weekday(d, weekday):
 def get_slots(session, start_timestamp, end_timestamp, now_timestamp, id_application):
 	headers = {
 		'authority': 'sport.nubapp.com',
-		'pragma': 'no-cache',
-		'cache-control': 'no-cache',
-		'sec-ch-ua': '" Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"',
 		'accept': 'application/json, text/javascript, */*; q=0.01',
 		'x-requested-with': 'XMLHttpRequest',
-		'sec-ch-ua-mobile': '?0',
-		'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36',
 		'sec-fetch-site': 'same-origin',
 		'sec-fetch-mode': 'cors',
 		'sec-fetch-dest': 'empty',
@@ -121,12 +123,7 @@ def get_slots(session, start_timestamp, end_timestamp, now_timestamp, id_applica
 def book(session, id_activity_calendar):
 	headers = {
 		'authority': 'sport.nubapp.com',
-		'pragma': 'no-cache',
-		'cache-control': 'no-cache',
-		'sec-ch-ua': 'Google Chrome";v="111", "Not(A:Brand";v="8", "Chromium";v="111"',
 		'accept': 'application/json, text/plain, */*',
-		'sec-ch-ua-mobile': '?0',
-		'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36',
 		'content-type': 'application/x-www-form-urlencoded',
 		'origin': 'https://sport.nubapp.com',
 		'sec-fetch-site': 'same-origin',
@@ -161,7 +158,7 @@ def main(user):
 	session = requests.Session()
 
 	# Login
-	sess_id = get_session_id(session, application_id)
+	get_session_id(session, application_id)
 	res_login = login(session, user['login'], user['password']).json()
 
 	if res_login.get('success'):
@@ -172,26 +169,9 @@ def main(user):
 
 
 	if options.verbose:
-		print("Response from login:")
-		print(res_login)
+		print(f"Response from login: \n {res_login}")
 
-	id_application = res_login.get('resasocialAccountData').get('boundApplicationData').get('id_application') if res_login.get('resasocialAccountData') is not None else res_login.get('user').get('id_application')
-	if options.verbose:
-		resasocial_account_data = res_login.get('resasocialAccountData')
-		# print(f'{resasocial_account_data=}')
-		if resasocial_account_data is not None:
-			bound_application_data = resasocial_account_data.get(
-				'boundApplicationData')
-			if bound_application_data:
-				id_application = bound_application_data.get('id_application')
-				if id_application:
-					print(id_application)
-				else:
-					print("Erreur: id_application non trouvé dans la réponse.")
-			else:
-				print("Erreur: boundApplicationData non trouvé dans la réponse.")
-		else:
-			print("Erreur: resasocialAccountData est None dans la réponse.")
+	id_application = user_data['app_data']['application_id'] or res_login.get('user').get('id_application')
 
 	if options.first_connexion:
 		print("First connexion mode : WIP")
@@ -229,18 +209,23 @@ def main(user):
 			}
 			if options.dry_run:
 				print("Dry run mode : no booking - just printing the slot")
-			if options.verbose and not options.dry_run:
-				print(f'Json data : {json.dumps(book_res, indent=2, sort_keys=True)}')
 			else:
+				print(f"Booking for {slot['name_activity']}, {res_slot.capitalize()} from {slot['start_time']} to {slot['end_time']}")
 				book_res = book(session, slot['id_activity_calendar'])
 				book_res = json.loads(book_res.content)
-			print(f"Booking for {slot['name_activity']}, {res_slot.capitalize()} from {slot['start_time']} to {slot['end_time']}")
 		else:
 			print(f'No slot available for {res_slot.capitalize()} at {str(user_data["slots"][res_slot])}')
 
 
 if __name__ == "__main__":
+	# Print version & user
+	message: str = 'Resawod Nubapp Reservator version : '
+	print('#' * (len(message + version) + 4))
+	print(f'# {message}{version} #')
+	print('#' * (len(message + version) + 4))
+	print(f'Launched by : {getpass.getuser()}')
 
+	# Parse options
 	parser = optparse.OptionParser()
 
 	parser.add_option('-f', '--first-connexion', action="store_true", dest="first_connexion", default=False,
@@ -250,20 +235,13 @@ if __name__ == "__main__":
 
 	options, _ = parser.parse_args()
 
-	# if options.first_connexion:
-	# 	print("First connexion mode : WIP")
-	# 	exit(0)
+	everything_OK: bool = False
 
-	# if options.multi_users:
-	# print("Multi users mode")
-
-	Everything_OK: bool = False
-
-	while not Everything_OK:
+	while not everything_OK:
 		for user in user_data['users']:
 			user_nb_slots = len(user['slots'])
 			res_errors: int = 0
-			Everything_OK = True
+			everything_OK = True
 			try:
 				main(user)
 			except SkipUser:
@@ -271,9 +249,9 @@ if __name__ == "__main__":
 			except NoSlotAvailable:
 				res_errors += 1
 				if res_errors == user_nb_slots:
-					Everything_OK = False
+					everything_OK = False
 					print(f"Slots for next week not yet available for {user['name']}")
-					print(f"Waiting for 5 min")
+					print("Waiting for 5 min")
 					time.sleep(300)
 					break
 				else:

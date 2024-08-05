@@ -4,4 +4,4 @@ src/personal_data/*
 !src/personal_data/*.example
 src/logs/*
 .env
-docker-compose.yml
+docker-compose-*.yaml
