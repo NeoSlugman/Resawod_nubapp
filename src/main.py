@@ -215,6 +215,7 @@ def main(user):
 				book_res = json.loads(book_res.content)
 		else:
 			print(f'No slot available for {res_slot.capitalize()} at {str(user_data["slots"][res_slot])}')
+			raise NoSlotAvailable
 
 
 if __name__ == "__main__":
@@ -224,6 +225,7 @@ if __name__ == "__main__":
 	print(f'# {message}{version} #')
 	print('#' * (len(message + version) + 4))
 	print(f'Launched by : {getpass.getuser()}')
+	print(f'at {datetime.datetime.now()}')
 
 	# Parse options
 	parser = optparse.OptionParser()
