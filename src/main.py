@@ -12,7 +12,7 @@ import getpass
 load_dotenv()
 
 #################
-version = '1.2.0'
+version = '1.2.1'
 #################
 
 # set environment variable
