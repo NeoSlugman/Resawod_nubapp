@@ -5,3 +5,4 @@ src/personal_data/*
 src/logs/*
 .env
 docker-compose-*.yaml
+resawod.sh

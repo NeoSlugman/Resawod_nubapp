@@ -10,26 +10,17 @@
       "login": "bob@gmail.com",
       "password": "super-duper-secret-password",
       "slots": [
-        "monday",
-        "wednesday"
+        {"day": "thursday", "time": "17:30", "activity": "Hyrox"}
       ]
+	
     },
     {
       "name": "Alice",
       "login": "alice@gmail.com",
       "password": "nobody-cares",
       "slots": [
-        "friday",
-        "saturday"
+        {"day": "friday", "time": "11:30", "activity": "Endurance"}
       ]
     }
-  ],
-  "slots": {
-    "monday": "18:30:00",
-    "tuesday": "19:30:00",
-    "wednesday": "18:30:00",
-    "thursday": "19:30:00",
-    "friday": "18:30:00",
-    "saturday": "11:00:00"
-  }
+  ]
 }
