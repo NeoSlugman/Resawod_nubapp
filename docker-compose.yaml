@@ -7,4 +7,4 @@ services:
       - ./path/to/data:/data
     environment:
       - DEV_MODE=0
-      - PYTHONUNBUFFERED=1
+    restart: none

@@ -182,7 +182,6 @@ if __name__ == "__main__":
                    help="[WIP] If it's the first connexion of the user, the script will show your id_application & id_category_activity.")
 	parser.add_option('-v', '--verbose', action="store_true", dest="verbose", default=False, help="Verbose mode")
 	parser.add_option('-d', '--dry-run', action="store_true", dest="dry_run", default=False, help="Dry-run mode to test connexion settings")
-	parser.add_option('-m', '--manual', action="store_true", dest="manual", default=False, help="Manual mode")
 
 	options, _ = parser.parse_args()
 
@@ -191,7 +190,7 @@ if __name__ == "__main__":
 	# Setup
 	Everything_OK: bool = False
 
-	# Check if every reservation failed, then, waiting for 5 min and retry
+	# If every reservation failed, wait for 5 min and retry
 	while not Everything_OK:			
 		with open(data_file, 'r') as json_file:
 			user_data = json.load(json_file)

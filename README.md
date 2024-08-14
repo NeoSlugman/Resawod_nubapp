@@ -43,17 +43,16 @@ poetry run src/main.py
 
 `-h, --help` affiche l'aide
 `-v, --verbose` affiche les logs
+`-d, --dry-run` afficher les créneaux disponibles sans faire de réservation
 ---`-f, --first-connection` affiche les id des créneaux disponibles---
-
-Mode multi utilisateur uniquement disponible désormais
 
 ## À venir
 
-- [X] Ajout d'un dry-runmode pour tester le script sans réserver de créneaux
+- [X] Ajout d'un dry-run mode pour tester le script sans réserver de créneaux
 - [X] Ajout d'un mode multi-utilisateur -> désormais le seul mode disponible
 - [ ] Ajout d'un mode first connexion pour afficher l'id des créneaux -> WIP
-- [X] Ajout d'un check de la publication du nouveau planning le dimanche soir pour lancer la réservation des créneaux de la semaine suivante
-- [ ] Ajout d'un mode multi créneaux sur un/e même journée/créneau horaire
+- [X] Ajout d'un check de la publication du nouveau planning au lancement pour effectuer la réservation des créneaux de la semaine suivante
+- [X] Ajout d'un mode multi créneaux sur un/e même journée/créneau horaire
 
 ---
 
@@ -80,4 +79,13 @@ See the [launch](#launch) section
 
 `-h, --help` show this help message and exit
 `-v, --verbose` verbose mode
-`-f, --first-connexion` first connexion to the platform
+`-d, --dry-run` dry-run mode - no real reservation
+---`-f, --first-connexion` first connexion to the platform ---
+
+## To Do
+
+- [X] Add a dry run mode to test the script
+- [X] Add a multi-user mode to allow multiple users to use the script -> it's the only mode available now
+- [ ] Add a first connexion mode to show the id of the reservation -> WIP
+- [X] Add a check of the publication of the new planning on launch before starting to reserve the next week's slots
+- [X] Add a multi-reservation mode to allow multiple reservations on the same day/hour
