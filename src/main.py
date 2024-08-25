@@ -12,7 +12,7 @@ import getpass
 load_dotenv()
 
 #################
-version = '1.3.2'
+version = '1.3.3'
 #################
 
 # set environment variable
@@ -79,7 +79,13 @@ def get_slots(session, start_timestamp, end_timestamp, now_timestamp, id_applica
 def book(session, id_activity_calendar):
 
 	data = {
-		'items[activities][0][id_activity_calendar]': id_activity_calendar
+		'items[activities][0][id_activity_calendar]': id_activity_calendar,
+		'items[activities][0][unit_price]': '0',
+		'items[activities][0][n_guests]': '0',
+		'items[activities][0][id_resource]': 'false',
+		'discount_code': 'false',
+		'form': '',
+		'formIntoNotes': ''
 	}
 	ret = session.post(
 		'https://sport.nubapp.com/web/ajax/bookings/bookBookings.php', data=data)
@@ -164,7 +170,11 @@ def main(user):
 			else:
 				book_res = book(session, slot['id_activity_calendar'])
 				book_res = json.loads(book_res.content)
-			print(f"Booked for {slot['name_activity']} on {res_slot["day"].capitalize()} from {slot['start_time']} to {slot['end_time']}")
+				match int(book_res['error']):
+					case 0:
+						print(f"{green_color}Booked for {slot['name_activity']} on {res_slot['day'].capitalize()} from {slot['start_time']} to {slot['end_time']}{reset_color}")
+					case 5:
+						print(f'{orange_color}Already booked for {slot['name_activity']} on {res_slot['day'].capitalize()} from {slot['start_time']} to {slot['end_time']}{reset_color}')
 
 
 if __name__ == "__main__":
