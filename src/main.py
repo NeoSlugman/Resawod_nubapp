@@ -30,8 +30,9 @@ class SkipUser(Exception):
 class NoSlotAvailable(Exception):
 	pass
 
-data_file_prefix: str = "/data" if not os.getenv('RESAWOD_DEV_MODE') else "src/personal_data"
-data_file: str = f"{data_file_prefix}/data.json" if not os.getenv('RESAWOD_DEV_MODE') else f"{data_file_prefix}/data-dev.json"
+dev_mode: bool = True if os.getenv('RESAWOD_DEV_MODE') else False
+data_file_prefix: str = "/data" if not dev_mode else "src/personal_data"
+data_file: str = f"{data_file_prefix}/data.json" if not dev_mode else f"{data_file_prefix}/data-dev.json"
 
 
 def get_session_id(session, id_application):
@@ -207,8 +208,12 @@ if __name__ == "__main__":
 			except SkipUser:
 				continue
 			except NoSlotAvailable:
-				print("Waiting for 5 min")
-				sleep(300)
+				if dev_mode:
+					print('Dev Mode, Waiting 3s')
+					sleep(3)
+				else:
+					print("Waiting for 5 min")
+					sleep(300)
 				break
 			else:
 				Everything_OK = True
