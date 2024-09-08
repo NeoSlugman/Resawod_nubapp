@@ -12,7 +12,7 @@ import getpass
 load_dotenv()
 
 #################
-version = '1.3.3'
+version = '1.3.4'
 #################
 
 # set environment variable
@@ -215,6 +215,7 @@ if __name__ == "__main__":
 			res_errors: int = 0
 			try:
 				main(user)
+				Everything_OK = True
 			except SkipUser:
 				continue
 			except NoSlotAvailable:
@@ -224,6 +225,5 @@ if __name__ == "__main__":
 				else:
 					print("Waiting for 5 min")
 					sleep(300)
+				Everything_OK = False
 				break
-			else:
-				Everything_OK = True
