@@ -223,7 +223,7 @@ if __name__ == "__main__":
 					print('Dev Mode, Waiting 3s')
 					sleep(3)
 				else:
-					print("Waiting for 5 min")
-					sleep(300)
+					print("Waiting for 3 min")
+					sleep(180)
 				Everything_OK = False
 				break
