@@ -12,7 +12,7 @@ import getpass
 load_dotenv()
 
 #################
-version = '1.3.4'
+version = '1.3.5'
 #################
 
 # set environment variable
@@ -143,6 +143,8 @@ def main(user):
 		eligible_slots = [s for s in slots if (res_slot["time"] in s['start_time'] 
 							and res_slot["activity"] in s['name_activity'])]
 		# print(f'{len(eligible_slots)} slot found for {res_slot["activity"]} on {res_slot["day"].capitalize()} at {str(res_slot["time"])}')
+		with open("src/test/eligible_slots_test.json", "w") as f:
+			json.dump(slots, f)
 
 		if len(eligible_slots) == 0:
 			global res_errors
@@ -174,7 +176,7 @@ def main(user):
 					case 0:
 						print(f"{green_color}Booked for {slot['name_activity']} on {res_slot['day'].capitalize()} from {slot['start_time']} to {slot['end_time']}{reset_color}")
 					case 5:
-						print(f'{orange_color}Already booked for {slot['name_activity']} on {res_slot['day'].capitalize()} from {slot['start_time']} to {slot['end_time']}{reset_color}')
+						print(f"{orange_color}Already booked for {slot['name_activity']} on {res_slot['day'].capitalize()} from {slot['start_time']} to {slot['end_time']}{reset_color}")
 
 
 if __name__ == "__main__":

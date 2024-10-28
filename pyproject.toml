@@ -10,6 +10,7 @@ package-mode = false
 python = "^3.10"
 requests = "^2.32.3"
 python-dotenv = "^1.0.1"
+python-crontab = "^3.2.0"
 
 
 [build-system]
