@@ -8,11 +8,12 @@ import json
 import os
 from dotenv import load_dotenv
 import getpass
+from html import unescape
 
 load_dotenv()
 
 #################
-version = '1.3.4'
+version = '1.3.6'
 #################
 
 # set environment variable
@@ -27,6 +28,7 @@ reset_color = '\033[0m'
 # Custom Exceptions
 class SkipUser(Exception):
 	pass
+
 class NoSlotAvailable(Exception):
 	pass
 
@@ -175,6 +177,8 @@ def main(user):
 						print(f"{green_color}Booked for {slot['name_activity']} on {res_slot['day'].capitalize()} from {slot['start_time']} to {slot['end_time']}{reset_color}")
 					case 5:
 						print(f'{orange_color}Already booked for {slot['name_activity']} on {res_slot['day'].capitalize()} from {slot['start_time']} to {slot['end_time']}{reset_color}')
+					case _:
+						print(f"{red_color}Error {book_res['error']} : {unescape(book_res['activities_errors'][f'{slot['id_activity_calendar']}']['message']).replace("</br>", "")}{reset_color}")
 
 
 if __name__ == "__main__":
